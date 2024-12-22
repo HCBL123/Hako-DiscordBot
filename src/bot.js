@@ -21,16 +21,24 @@ client.on('messageCreate', async message => {
     if (message.author.bot) return;
 
     if (message.content === '!help') {
-        return message.reply('Available commands:\n!epub <url> - Convert webpage to epub\n!help - Show this message');
+        return message.reply(
+            'Available commands:\n' +
+            '!epub <url> - Convert webpage to epub\n' +
+            '!info <url> - Get novel information\n' +
+            '!hako - Show popular stories on Hako.vn\n' +
+            '!help - Show this message'
+        );
     }
 
-    if (message.content.startsWith('!epub')) {
+    // Add !hako to the command check
+    if (message.content.startsWith('!epub') || 
+        message.content.startsWith('!info') || 
+        message.content === '!hako') {
         try {
-            // Use the execute method from the epub command module
             const args = message.content.split(' ').slice(1);
             await epubCommand.execute(message, args);
         } catch (error) {
-            console.error('Error handling epub command:', error);
+            console.error('Error handling command:', error);
             message.reply('Sorry, there was an error processing your request.');
         }
     }
