@@ -1,4 +1,4 @@
-const { AttachmentBuilder, EmbedBuilder } = require('discord.js');
+const { AttachmentBuilder, EmbedBuilder, ActionRowBuilder, StringSelectMenuBuilder } = require('discord.js');
 const { validateLink } = require('../utils/validate');
 const { convertToEpub } = require('../utils/epub-converter');
 const { getNovelInfo } = require('../utils/info-fetcher');
@@ -13,7 +13,7 @@ module.exports = {
         // Handle hako command first
         if (message.content === '!hako') {
             try {
-                console.log('Executing hako command...'); // Debug log
+                console.log('Executing hako command...');
                 
                 const pythonProcess = spawn('python', [
                     path.resolve(__dirname, '../get_bxh.py')
@@ -25,13 +25,11 @@ module.exports = {
                 pythonProcess.stdout.on('data', (data) => {
                     const text = data.toString('utf8');
                     outputData += text;
-                    console.log('Python output:', text); // Debug log
                 });
 
                 pythonProcess.stderr.on('data', (data) => {
                     const text = data.toString('utf8');
                     errorData += text;
-                    console.error('Python error:', text);
                 });
 
                 pythonProcess.on('close', async (code) => {
@@ -41,13 +39,11 @@ module.exports = {
                     }
 
                     try {
-                        // Skip the header line and split by delimiter
                         const sections = outputData.split('-'.repeat(80))
                             .filter(section => section.trim())
                             .filter(section => !section.includes('Popular Stories:'));
 
                         const stories = sections.map(section => {
-                            // More precise regex patterns
                             const titleMatch = section.match(/Title:\s*([^\n]+)/);
                             const imageMatch = section.match(/Image:\s*([^\n]+)/);
                             
@@ -55,24 +51,56 @@ module.exports = {
                                 title: titleMatch ? titleMatch[1].trim() : 'Unknown',
                                 image: imageMatch ? imageMatch[1].trim() : null
                             };
+                        }).filter(story => story.title !== 'Unknown' && story.image);
+
+                        const select = new StringSelectMenuBuilder()
+                            .setCustomId('story_select')
+                            .setPlaceholder('Select a story to view')
+                            .addOptions(
+                                stories.map((story, index) => ({
+                                    label: `${index + 1}. ${story.title.substring(0, 100)}`,
+                                    value: index.toString()
+                                }))
+                            );
+
+                        const row = new ActionRowBuilder().addComponents(select);
+
+                        const initialEmbed = new EmbedBuilder()
+                            .setColor('#0099ff')
+                            .setTitle('Popular Stories on Hako.vn')
+                            .setDescription('Select a story from the dropdown menu below');
+
+                        const response = await message.reply({
+                            embeds: [initialEmbed],
+                            components: [row]
                         });
 
-                        // Create embeds only for valid stories
-                        const embeds = stories
-                            .filter(story => story.title !== 'Unknown' && story.image)
-                            .map((story, index) => {
-                                return new EmbedBuilder()
+                        const collector = response.createMessageComponentCollector({
+                            time: 60000 // 1 minute timeout
+                        });
+
+                        collector.on('collect', async interaction => {
+                            if (interaction.customId === 'story_select') {
+                                await interaction.deferUpdate();
+                                const selectedStory = stories[parseInt(interaction.values[0])];
+                                
+                                const updatedEmbed = new EmbedBuilder()
                                     .setColor('#0099ff')
-                                    .setTitle(`${index + 1}. ${story.title}`)
-                                    .setImage(story.image)
+                                    .setTitle(selectedStory.title)
+                                    .setImage(selectedStory.image)
                                     .setTimestamp();
-                            });
 
-                        if (embeds.length === 0) {
-                            return message.reply('No valid stories found.');
-                        }
+                                await response.edit({
+                                    embeds: [updatedEmbed],
+                                    components: [row] // Keep dropdown
+                                });
+                            }
+                        });
 
-                        return message.reply({ embeds: embeds.slice(0, 10) });
+                        collector.on('end', () => {
+                            response.edit({ components: [] }); // Disable dropdown after timeout
+                        });
+
                     } catch (error) {
                         console.error('Error parsing stories:', error);
                         return message.reply('Error processing stories data');
