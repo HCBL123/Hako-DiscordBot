@@ -9,6 +9,8 @@ A simple Discord bot that allows users to input a reading link and receive back 
 - Accepts reading links from users.
 - Converts the links into EPUB file format.
 - Sends the EPUB file back to the user.
+- Show highest ranking
+- Check project's info
 
 ## Installation
 
