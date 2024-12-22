@@ -35,45 +35,54 @@ module.exports = {
                 });
 
                 pythonProcess.on('close', async (code) => {
-                    console.log('Python process closed with code:', code); // Debug log
                     if (code !== 0) {
                         console.error('Python error:', errorData);
                         return message.reply('Error fetching popular stories');
                     }
 
                     try {
-                        const stories = outputData.split('-'.repeat(80))
+                        // Skip the header line and split by delimiter
+                        const sections = outputData.split('-'.repeat(80))
                             .filter(section => section.trim())
-                            .map(section => {
-                                const titleMatch = section.match(/Title: (.+)/);
-                                const imageMatch = section.match(/Image: (.+)/);
-                                return {
-                                    title: titleMatch ? titleMatch[1].trim() : 'Unknown',
-                                    image: imageMatch ? imageMatch[1].trim() : null
-                                };
-                            });
+                            .filter(section => !section.includes('Popular Stories:'));
 
-                        // Create an embed for each story
-                        const embeds = stories.map((story, index) => {
-                            return new EmbedBuilder()
-                                .setColor('#0099ff')
-                                .setTitle(`${index + 1}. ${story.title}`)
-                                .setImage(story.image)
-                                .setTimestamp();
+                        const stories = sections.map(section => {
+                            // More precise regex patterns
+                            const titleMatch = section.match(/Title:\s*([^\n]+)/);
+                            const imageMatch = section.match(/Image:\s*([^\n]+)/);
+                            
+                            return {
+                                title: titleMatch ? titleMatch[1].trim() : 'Unknown',
+                                image: imageMatch ? imageMatch[1].trim() : null
+                            };
                         });
 
-                        // Send all embeds in one message (Discord allows up to 10 embeds per message)
+                        // Create embeds only for valid stories
+                        const embeds = stories
+                            .filter(story => story.title !== 'Unknown' && story.image)
+                            .map((story, index) => {
+                                return new EmbedBuilder()
+                                    .setColor('#0099ff')
+                                    .setTitle(`${index + 1}. ${story.title}`)
+                                    .setImage(story.image)
+                                    .setTimestamp();
+                            });
+
+                        if (embeds.length === 0) {
+                            return message.reply('No valid stories found.');
+                        }
+
                         return message.reply({ embeds: embeds.slice(0, 10) });
                     } catch (error) {
                         console.error('Error parsing stories:', error);
                         return message.reply('Error processing stories data');
                     }
                 });
-                return; // Add this to prevent falling through to other commands
             } catch (error) {
                 console.error('Error executing hako command:', error);
                 return message.reply('An error occurred while fetching the story list.');
             }
+            return;
         }
 
         // Handle info command
