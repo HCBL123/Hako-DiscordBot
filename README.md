@@ -27,9 +27,11 @@ A simple Discord bot that allows users to input a reading link and receive back 
 
 ## Configuration
 
-1. Create a `.env` file in the root directory and add your Discord bot token:
+1. Create a `config.js` file in the /src directory and add your Discord bot token:
    ```
-   DISCORD_TOKEN=your_bot_token_here
+   module.exports = {
+    token: <your_token_here>,
+   };
    ```
 
 ## Usage
