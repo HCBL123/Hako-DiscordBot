@@ -9,7 +9,7 @@ if sys.stdout.encoding != 'utf-8':
     sys.stderr = codecs.getwriter('utf-8')(sys.stderr.buffer, 'strict')
 
 def get_popular_stories(html_content):
-    """Extract popular stories with their titles and background images"""
+    """Extract popular stories with their titles, URLs, and background images"""
     soup = BeautifulSoup(html_content, "html.parser")
     stories = []
     
@@ -17,9 +17,13 @@ def get_popular_stories(html_content):
     popular_items = soup.find_all("div", class_="popular-thumb-item")
     
     for item in popular_items:
-        # Find title
+        # Find title and URL
         title_div = item.find("div", class_="thumb_attr series-title")
-        title = title_div.find("a")["title"] if title_div else "Unknown Title"
+        if title_div and title_div.find("a"):
+            title = title_div.find("a")["title"]
+            url = "https://ln.hako.vn" + title_div.find("a")["href"]
+        else:
+            continue
         
         # Find background image URL
         bg_div = item.find("div", class_="content img-in-ratio")
@@ -28,6 +32,7 @@ def get_popular_stories(html_content):
         
         stories.append({
             "title": title,
+            "url": url,
             "image_url": bg_url
         })
     
@@ -50,6 +55,7 @@ def main():
         
         for idx, story in enumerate(stories, 1):
             print(f"{idx}. Title: {story['title']}", flush=True)
+            print(f"   URL: {story['url']}", flush=True)
             print(f"   Image: {story['image_url']}", flush=True)
             print("-" * 80, flush=True)
 

@@ -45,30 +45,40 @@ module.exports = {
 
                         const stories = sections.map(section => {
                             const titleMatch = section.match(/Title:\s*([^\n]+)/);
+                            const urlMatch = section.match(/URL:\s*([^\n]+)/);
                             const imageMatch = section.match(/Image:\s*([^\n]+)/);
                             
                             return {
                                 title: titleMatch ? titleMatch[1].trim() : 'Unknown',
+                                url: urlMatch ? urlMatch[1].trim() : null,
                                 image: imageMatch ? imageMatch[1].trim() : null
                             };
                         }).filter(story => story.title !== 'Unknown' && story.image);
 
+                        // Create initial embed with just the list
+                        const initialEmbed = new EmbedBuilder()
+                            .setColor('#0099ff')
+                            .setTitle('Popular Stories on Hako.vn')
+                            .addFields(
+                                stories.map((story, index) => ({
+                                    name: `${index + 1}.`,
+                                    value: story.title,
+                                    inline: false
+                                }))
+                            );
+
+                        // Create dropdown for selection
                         const select = new StringSelectMenuBuilder()
                             .setCustomId('story_select')
-                            .setPlaceholder('Select a story to view')
+                            .setPlaceholder('Select a story to view details')
                             .addOptions(
                                 stories.map((story, index) => ({
-                                    label: `${index + 1}. ${story.title.substring(0, 100)}`,
+                                    label: `${index + 1}. ${story.title.substring(0, 94)}...`,
                                     value: index.toString()
                                 }))
                             );
 
                         const row = new ActionRowBuilder().addComponents(select);
-
-                        const initialEmbed = new EmbedBuilder()
-                            .setColor('#0099ff')
-                            .setTitle('Popular Stories on Hako.vn')
-                            .setDescription('Select a story from the dropdown menu below');
 
                         const response = await message.reply({
                             embeds: [initialEmbed],
@@ -84,16 +94,44 @@ module.exports = {
                                 await interaction.deferUpdate();
                                 const selectedStory = stories[parseInt(interaction.values[0])];
                                 
-                                const updatedEmbed = new EmbedBuilder()
-                                    .setColor('#0099ff')
-                                    .setTitle(selectedStory.title)
-                                    .setImage(selectedStory.image)
-                                    .setTimestamp();
+                                try {
+                                    const storyInfo = await getNovelInfo(selectedStory.url);
+                                    
+                                    const updatedEmbed = new EmbedBuilder()
+                                        .setColor('#0099ff')
+                                        .setTitle(storyInfo.title || selectedStory.title)
+                                        .setThumbnail(selectedStory.image) // Use thumbnail for smaller image on left
+                                        .setDescription(`[Read on Hako.vn](${selectedStory.url})`)
+                                        .addFields(
+                                            { name: 'Tác giả', value: storyInfo.author || 'Unknown', inline: true },
+                                            { name: 'Dịch giả', value: storyInfo.translator || 'Unknown', inline: true },
+                                            { name: 'Nhóm dịch', value: storyInfo.group || 'Unknown', inline: true },
+                                            { name: '\u200B', value: '\u200B', inline: false }, // Spacer
+                                            { name: 'Số từ', value: storyInfo.wordCount || 'Unknown', inline: true },
+                                            { name: 'Xếp hạng', value: storyInfo.rating || 'Unknown', inline: true },
+                                            { name: 'Lượt xem', value: storyInfo.views || 'Unknown', inline: true }
+                                        )
+                                        .setTimestamp();
 
-                                await response.edit({
-                                    embeds: [updatedEmbed],
-                                    components: [row] // Keep dropdown
-                                });
+                                    await response.edit({
+                                        embeds: [updatedEmbed],
+                                        components: [row]
+                                    });
+                                } catch (error) {
+                                    console.error('Error fetching story info:', error);
+                                    // If fetching detailed info fails, show basic info
+                                    const updatedEmbed = new EmbedBuilder()
+                                        .setColor('#0099ff')
+                                        .setTitle(selectedStory.title)
+                                        .setImage(selectedStory.image)
+                                        .setDescription('Could not fetch detailed information.')
+                                        .setTimestamp();
+
+                                    await response.edit({
+                                        embeds: [updatedEmbed],
+                                        components: [row]
+                                    });
+                                }
                             }
                         });
 
@@ -131,12 +169,12 @@ module.exports = {
                     .setColor('#0099ff')
                     .setTitle(info.title)
                     .addFields(
-                        { name: 'Author', value: info.author, inline: true },
-                        { name: 'Translator', value: info.translator, inline: true },
-                        { name: 'Translation Group', value: info.group, inline: true },
-                        { name: 'Word Count', value: info.wordCount, inline: true },
-                        { name: 'Rating', value: info.rating, inline: true },
-                        { name: 'Views', value: info.views, inline: true }
+                        { name: 'Tác giả', value: info.author, inline: true },
+                        { name: 'Dịch giả', value: info.translator, inline: true },
+                        { name: 'Nhóm dịch', value: info.group, inline: true },
+                        { name: 'Số từ', value: info.wordCount, inline: true },
+                        { name: 'Xếp hạng', value: info.rating, inline: true },
+                        { name: 'Lượt xem', value: info.views, inline: true }
                     )
                     .setTimestamp();
 
