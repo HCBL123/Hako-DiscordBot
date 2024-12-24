@@ -26,23 +26,44 @@ async function handleGeminiCommand(message, query, isTranslation = false) {
             const result = await model.generateContent(prompt);
             const text = result.response.text();
             
-            // Split response if it exceeds Discord's character limit
-            const MAX_LENGTH = 1900; // Leave room for code block formatting
+            if (isTranslation) {
+                // Create temp directory if it doesn't exist
+                const tempDir = path.join(__dirname, '../../temp');
+                await fs.mkdir(tempDir, { recursive: true });
+
+                // Create temp file with translation
+                const tempFile = path.join(tempDir, `translation_${Date.now()}.txt`);
+                await fs.writeFile(tempFile, text, 'utf8');
+
+                // Send file and then delete it
+                await message.reply({ 
+                    files: [tempFile]
+                });
+                await fs.unlink(tempFile);
+                return;
+            }
+            
+            // For non-translation queries, handle long messages
+            const MAX_LENGTH = 2000;
             if (text.length > MAX_LENGTH) {
                 const chunks = [];
                 for (let i = 0; i < text.length; i += MAX_LENGTH) {
-                    const chunk = text.slice(i, i + MAX_LENGTH);
-                    chunks.push(isTranslation ? `\`\`\`${chunk}\`\`\`` : chunk);
+                    chunks.push(text.slice(i, i + MAX_LENGTH));
                 }
-                // Send each chunk as a separate message
-                for (const chunk of chunks) {
-                    await message.reply(chunk);
+                
+                // Send first chunk as reply
+                await message.reply(chunks[0]);
+                
+                // Send remaining chunks as normal messages
+                for (let i = 1; i < chunks.length; i++) {
+                    await message.channel.send(chunks[i]);
                 }
                 return;
             }
             
-            // Send single message if within limit
-            return message.reply(isTranslation ? `\`\`\`${text}\`\`\`` : text);
+            // Send as normal message if within limit
+            return message.reply(text);
+
         } catch (geminiError) {
             console.error('Gemini API error:', geminiError);
             return message.reply('Too long, too bad.');
