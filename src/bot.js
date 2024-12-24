@@ -26,18 +26,23 @@ client.on('messageCreate', async message => {
             '!epub <url> - Convert webpage to epub\n' +
             '!info <url> - Get novel information\n' +
             '!hako - Show popular stories on Hako.vn\n' +
+            '!translate <text> - Translate English text to Vietnamese\n' +
             '!gemini <text> - Ask Gemini AI a question\n' +
             '!help - Show this message'
         );
     }
 
-    // Handle Gemini command
-    if (message.content.startsWith('!gemini')) {
-        const query = message.content.slice(8).trim();
+    // Handle Gemini commands
+    if (message.content.startsWith('!gemini') || message.content.startsWith('!translate')) {
+        const isTranslate = message.content.startsWith('!translate');
+        const prefix = isTranslate ? '!translate' : '!gemini';
+        const query = message.content.slice(prefix.length).trim();
+        
         if (!query) {
-            return message.reply('Please provide some text after !gemini');
+            return message.reply(`Please provide some text after ${prefix}`);
         }
-        return handleGeminiCommand(message, query);
+        
+        return handleGeminiCommand(message, query, isTranslate);
     }
 
     // Existing command handlers
