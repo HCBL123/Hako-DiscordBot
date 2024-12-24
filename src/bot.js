@@ -23,19 +23,19 @@ client.on('messageCreate', async message => {
     if (message.content === '!help') {
         return message.reply(
             'Available commands:\n' +
-            '!epub <url> - Convert webpage to epub\n' +
+            '!epub <url> - Convert story to epub\n' +
             '!info <url> - Get novel information\n' +
             '!hako - Show popular stories on Hako.vn\n' +
-            '!translate <text> - Translate English text to Vietnamese\n' +
+            '!trans <text> - Translate English light novel to Vietnamese\n' +
             '!gemini <text> - Ask Gemini AI a question\n' +
             '!help - Show this message'
         );
     }
 
     // Handle Gemini commands
-    if (message.content.startsWith('!gemini') || message.content.startsWith('!translate')) {
-        const isTranslate = message.content.startsWith('!translate');
-        const prefix = isTranslate ? '!translate' : '!gemini';
+    if (message.content.startsWith('!gemini') || message.content.startsWith('!trans')) {
+        const isTranslate = message.content.startsWith('!trans');
+        const prefix = isTranslate ? '!trans' : '!gemini';
         const query = message.content.slice(prefix.length).trim();
         
         if (!query) {

@@ -1,5 +1,7 @@
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const { gemini_api } = require('../config');
+const fs = require('fs').promises;
+const path = require('path');
 
 // Initialize Gemini
 const genAI = new GoogleGenerativeAI(gemini_api);
