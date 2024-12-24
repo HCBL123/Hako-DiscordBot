@@ -1,7 +1,7 @@
 const { Client, GatewayIntentBits, ActivityType } = require('discord.js');
 const { token } = require('./config');
-// Import the entire module object instead of trying to destructure handleEpubCommand
 const epubCommand = require('./commands/epub');
+const { handleGeminiCommand } = require('./commands/gemini');
 
 const client = new Client({
     intents: [
@@ -26,11 +26,21 @@ client.on('messageCreate', async message => {
             '!epub <url> - Convert webpage to epub\n' +
             '!info <url> - Get novel information\n' +
             '!hako - Show popular stories on Hako.vn\n' +
+            '!gemini <text> - Ask Gemini AI a question\n' +
             '!help - Show this message'
         );
     }
 
-    // Add !hako to the command check
+    // Handle Gemini command
+    if (message.content.startsWith('!gemini')) {
+        const query = message.content.slice(8).trim();
+        if (!query) {
+            return message.reply('Please provide some text after !gemini');
+        }
+        return handleGeminiCommand(message, query);
+    }
+
+    // Existing command handlers
     if (message.content.startsWith('!epub') || 
         message.content.startsWith('!info') || 
         message.content === '!hako') {
