@@ -9,8 +9,10 @@
   "dependencies": {
     "@google/generative-ai": "^0.21.0",
     "axios": "^1.7.9",
+    "cheerio": "^1.0.0",
     "discord.js": "^14.0.0",
     "dotenv": "^16.4.7",
+    "epub-gen": "^0.1.0",
     "python-shell": "^3.0.1"
   },
   "author": "",
