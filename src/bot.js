@@ -27,15 +27,18 @@ client.on('messageCreate', async message => {
             '!info <url> - Get novel information\n' +
             '!hako - Show popular stories on Hako.vn\n' +
             '!trans <text> - Translate English light novel to Vietnamese\n' +
-            '!gemini <text> - Ask Gemini AI a question\n' +
+            '!gemini/！ジェミニ <text> - Ask Gemini AI a question\n' +
             '!help - Show this message'
         );
     }
 
     // Handle Gemini commands
-    if (message.content.startsWith('!gemini') || message.content.startsWith('!trans')) {
+    if (message.content.startsWith('!gemini') || 
+        message.content.startsWith('!trans') || 
+        message.content.startsWith('！ジェミニ')) {
         const isTranslate = message.content.startsWith('!trans');
-        const prefix = isTranslate ? '!trans' : '!gemini';
+        const isJapanese = message.content.startsWith('！ジェミニ');
+        const prefix = isTranslate ? '!trans' : (isJapanese ? '！ジェミニ' : '!gemini');
         const query = message.content.slice(prefix.length).trim();
         
         if (!query) {
