@@ -2,6 +2,7 @@ const { Client, GatewayIntentBits, ActivityType } = require('discord.js');
 const { token } = require('./config');
 const epubCommand = require('./commands/epub');
 const { handleGeminiCommand } = require('./commands/gemini');
+const { handleTranslation } = require('./commands/translator');
 
 const client = new Client({
     intents: [
@@ -32,20 +33,32 @@ client.on('messageCreate', async message => {
         );
     }
 
+    // Handle translation command
+    if (message.content.startsWith('!trans')) {
+        const args = message.content.slice('!trans'.length).trim().split(' ');
+        const flag = args[0];
+        let query;
+
+        if (flag === '-f' || flag === '-m') {
+            query = args.slice(1).join(' ');
+            return handleTranslation(message, query, flag);
+        } else {
+            query = args.join(' ');
+            return handleTranslation(message, query);
+        }
+    }
+
     // Handle Gemini commands
-    if (message.content.startsWith('!gemini') || 
-        message.content.startsWith('!trans') || 
-        message.content.startsWith('！ジェミニ')) {
-        const isTranslate = message.content.startsWith('!trans');
+    if (message.content.startsWith('!gemini') || message.content.startsWith('！ジェミニ')) {
         const isJapanese = message.content.startsWith('！ジェミニ');
-        const prefix = isTranslate ? '!trans' : (isJapanese ? '！ジェミニ' : '!gemini');
+        const prefix = isJapanese ? '！ジェミニ' : '!gemini';
         const query = message.content.slice(prefix.length).trim();
         
         if (!query) {
             return message.reply(`Please provide some text after ${prefix}`);
         }
         
-        return handleGeminiCommand(message, query, isTranslate);
+        return handleGeminiCommand(message, query);
     }
 
     // Existing command handlers
