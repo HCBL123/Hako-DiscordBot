@@ -25,16 +25,27 @@ A simple Discord bot that allows users to input a reading link and receive back 
 3. Install the dependencies:
    ```
    npm install
+   pip install -r requirements.txt
    ```
 
 ## Configuration
 
-1. Create a `config.js` file in the /src directory and add your Discord bot token:
+1. Copy `src/config.example.js` to `src/config.js`:
    ```
+   cp src/config.example.js src/config.js
+   ```
+
+2. Edit `src/config.js` and add your Discord bot token and Gemini API key (optional):
+   ```javascript
    module.exports = {
-    token: <your_token_here>,
+       token: 'YOUR_DISCORD_BOT_TOKEN_HERE',
+       gemini_api: 'YOUR_GEMINI_API_KEY_HERE' // Optional
    };
    ```
+
+   **OR** use environment variables (recommended for hosting):
+   - Create a `.env` file in the root directory
+   - Add: `DISCORD_TOKEN=your_token` and `GEMINI_API=your_key`
 
 ## Usage
 
@@ -43,6 +54,16 @@ A simple Discord bot that allows users to input a reading link and receive back 
    node src/bot.js
    ```
 2. Invite the bot to your Discord server and use the command to input a reading link.
+
+## Hosting
+
+For detailed hosting instructions, see [HOSTING_GUIDE.md](./HOSTING_GUIDE.md).
+
+Quick hosting options:
+- **Railway** (Recommended - Free tier available)
+- **Render** (Free tier with limitations)
+- **Replit** (Free, easy for beginners)
+- **VPS** (Most control, requires setup)
 
 ## Contributing
 
