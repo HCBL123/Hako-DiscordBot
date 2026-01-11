@@ -11,7 +11,7 @@ COPY . .
 RUN cp src/config.example.js src/config.js
 
 # Install Node.js dependencies
-RUN npm ci
+RUN npm install
 
 # Install Python dependencies
 # We use --no-cache-dir to keep the container small
