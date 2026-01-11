@@ -42,7 +42,7 @@ async function handleGeminiCommand(message, query, isTranslation = false, transl
         }
 
         const model = genAI.getGenerativeModel({ 
-            model: "gemini-2.0-flash-exp",
+            model: "gemini-1.5-flash",
             safetySettings: [
                 {
                     category: "HARM_CATEGORY_HARASSMENT",
