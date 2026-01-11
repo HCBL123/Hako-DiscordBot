@@ -1,11 +1,16 @@
 # nixpacks.toml
+
+# 1. Tell Railway to use both Node and Python
 providers = ["node", "python"]
 
+# 2. Install specific system packages
 [phases.setup]
-nixPkgs = ["...", "nodejs", "python3"]
+nixPkgs = ["nodejs", "python3"]
 
+# 3. Install dependencies for BOTH languages
 [phases.install]
 cmds = ["npm ci", "pip install -r requirements.txt"]
 
+# 4. Set the start command
 [start]
 cmd = "node src/bot.js"
