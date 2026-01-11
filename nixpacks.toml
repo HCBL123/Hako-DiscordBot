@@ -1,0 +1,11 @@
+# nixpacks.toml
+providers = ["node", "python"]
+
+[phases.setup]
+nixPkgs = ["...", "nodejs", "python3"]
+
+[phases.install]
+cmds = ["npm ci", "pip install -r requirements.txt"]
+
+[start]
+cmd = "node src/bot.js"
