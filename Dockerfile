@@ -6,8 +6,6 @@ WORKDIR /app
 # Copy all your project files into the container
 COPY . .
 
-# ---> THIS IS THE FIX: Delete the lock file so we get fresh versions <---
-RUN rm package-lock.json
 
 # Create the config file
 RUN cp src/config.example.js src/config.js
