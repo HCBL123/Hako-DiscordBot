@@ -1,4 +1,4 @@
-const { Client, GatewayIntentBits, ActivityType } = require('discord.js');
+const { Client, GatewayIntentBits, ActivityType, Events } = require('discord.js');
 const { token } = require('./config');
 const epubCommand = require('./commands/epub');
 const { handleGeminiCommand } = require('./commands/gemini');
