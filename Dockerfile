@@ -7,6 +7,9 @@ WORKDIR /app
 # Copy all your project files into the container
 COPY . .
 
+# ---> ADD THIS LINE HERE <---
+RUN cp src/config.example.js src/config.js
+
 # Install Node.js dependencies
 RUN npm ci
 
