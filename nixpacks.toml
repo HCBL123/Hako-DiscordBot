@@ -1,16 +1,17 @@
 # nixpacks.toml
 
-# 1. Tell Railway to use both Node and Python
+# 1. Providers handle the languages (Node & Python) automatically
 providers = ["node", "python"]
 
-# 2. Install specific system packages
+# 2. ONLY install extra tools here. REMOVE "python3" and "nodejs".
+# (Keep ffmpeg if your bot plays music/audio, otherwise remove this section)
 [phases.setup]
-nixPkgs = ["nodejs", "python3"]
+nixPkgs = ["ffmpeg"]
 
-# 3. Install dependencies for BOTH languages
+# 3. Install dependencies
 [phases.install]
 cmds = ["npm ci", "pip install -r requirements.txt"]
 
-# 4. Set the start command
+# 4. Start command
 [start]
 cmd = "node src/bot.js"
