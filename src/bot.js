@@ -13,7 +13,7 @@ const client = new Client({
     ]
 });
 
-client.once('ready', () => {
+client.once(Events.ClientReady, c => {
     console.log(`Logged in as ${client.user.tag}!`);
     client.user.setActivity('!help for commands', { type: ActivityType.Watching });
 });
